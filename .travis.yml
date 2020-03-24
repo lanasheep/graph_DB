@@ -13,3 +13,7 @@ deploy:
   app: "graph--db"
   api_key:
     secure: "b40e95d3-2f94-45b6-948a-47b9a48dd2d0"
+    
+after_success:
+  - cat ./coverage/lcov.info | ./node_modules/codecov.io/bin/codecov.io.js
+  - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
