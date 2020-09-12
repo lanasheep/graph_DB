@@ -16,6 +16,7 @@ def test_parse_grammar(tmp_path):
     tmp_file = tmp_path / "file.txt"
     tmp_file.write_text("S a S b S\nS eps")
     prods = parse_grammar(os.path.normpath(tmp_file))
+
     assert len(prods) == 2
     assert ("S", ["a", "S", "b", "S"]) in prods
     assert ("S", ["eps"]) in prods
@@ -25,6 +26,7 @@ def test_print_grammar(tmp_path):
     prods = [("S", ["A", "B"]), ("A", ["a"]), ("B", ["b"])]
     tmp_file = tmp_path / "file.txt"
     print_grammar(prods, os.path.normpath(tmp_file))
+
     assert open(os.path.normpath(tmp_file), "r").read() == "S A B\nA a\nB b\n"
 
 
@@ -84,14 +86,11 @@ def test_to_CNF():
     prods = [("S", ["a", "S", "b"]), ("S", ["eps"])]
     res_prods = to_CNF(prods)
 
-    assert len(res_prods) == 11
+    assert len(res_prods) == 8
     assert ("S000", ["eps"]) in res_prods
-    assert ("S000", ["N01", "N02"]) in res_prods
-    assert ("N11", ["S"]) in res_prods
-    assert ("N02", ["A00"]) in res_prods
-    assert ("S", ["N21", "N22"]) in res_prods
-    assert ("A00", ["N11", "N12"]) in res_prods
-    assert ("N22", ["A00"]) in res_prods
+    assert ('S000', ['N01', 'A00']) in res_prods
+    assert ('A00', ['S', 'N12']) in res_prods
+    assert ('S', ['N21', 'A00']) in res_prods
     assert ("N01", ["a"]) in res_prods
     assert ("N21", ["a"]) in res_prods
     assert ("A00", ["b"]) in res_prods

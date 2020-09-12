@@ -3,7 +3,6 @@ from collections import defaultdict
 from queue import Queue
 
 eps = "eps"
-start = "S000"
 
 
 def is_term(symbol):
@@ -26,8 +25,9 @@ def print_grammar(prods, filename):
 
 
 def add_new_start(prods):
-    prods.append((start, ["S"]))
-    prods.append((start, [eps]))
+    prods.append(("S000", ["S"]))
+    prods.append(("S000", [eps]))
+
     return prods
 
 
@@ -105,9 +105,10 @@ def delete_chain_prods(prods):
 
     new_prods = []
     for first, second in pairs:
-        new_prods += [(first, lst) for lst in lists[second] if [symb for symb in lst if is_term(symb)]]
+        new_prods += [(first, lst) for lst in lists[second]]
+    new_prods += [prod for prod in prods if not prod in new_prods]
 
-    return new_prods + [prod for prod in prods if [symb for symb in prod[1] if is_term(symb)]]
+    return [prod for prod in new_prods if not (len(prod[1]) == 1 and not is_term(prod[1][0]))]
 
 
 def delete_useless_nonterm(start, prods):
@@ -157,11 +158,21 @@ def delete_pair_term(prods):
     cnt = 0
     for prod in prods:
         if len(prod[1]) == 2 and (is_term(prod[1][0]) or is_term(prod[1][1])):
-            new_nonterm1 = "N" + str(cnt) + "1"
-            new_nonterm2 = "N" + str(cnt) + "2"
-            new_prods.append((prod[0], [new_nonterm1, new_nonterm2]))
-            new_prods.append((new_nonterm1, [prod[1][0]]))
-            new_prods.append((new_nonterm2, [prod[1][1]]))
+            if is_term(prod[1][0]) and is_term(prod[1][1]):
+                new_nonterm1 = "N" + str(cnt) + "1"
+                new_nonterm2 = "N" + str(cnt) + "2"
+                new_prods.append((prod[0], [new_nonterm1, new_nonterm2]))
+                new_prods.append((new_nonterm1, [prod[1][0]]))
+                new_prods.append((new_nonterm2, [prod[1][1]]))
+            else:
+                if is_term(prod[1][0]):
+                    new_nonterm1 = "N" + str(cnt) + "1"
+                    new_prods.append((prod[0], [new_nonterm1, prod[1][1]]))
+                    new_prods.append((new_nonterm1, [prod[1][0]]))
+                else:
+                    new_nonterm2 = "N" + str(cnt) + "2"
+                    new_prods.append((prod[0], [prod[1][0], new_nonterm2]))
+                    new_prods.append((new_nonterm2, [prod[1][1]]))
             cnt += 1
         else:
             new_prods.append(prod)
@@ -173,7 +184,16 @@ def to_CNF(prods):
     prods = delete_long_prods(prods)
     prods = delete_eps_prods(prods)
     prods = delete_chain_prods(prods)
-    prods = delete_useless_nonterm(start, prods)
+    prods = delete_useless_nonterm("S000", prods)
+    prods = delete_pair_term(prods)
+
+    return prods
+
+
+def to_weak_CNF(prods):
+    prods = delete_long_prods(prods)
+    prods = delete_chain_prods(prods)
+    prods = delete_useless_nonterm("S", prods)
     prods = delete_pair_term(prods)
 
     return prods
