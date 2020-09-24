@@ -31,40 +31,43 @@ def test_parse_graph(tmp_path):
 def test_print_res(tmp_path):
     tmp_file = tmp_path / "file.txt"
     res = [("A", 0, 1), ("A", 2, 2), ("S", 2, 1), ("S", 0, 2), ("B", 0, 2)]
-    print_res(res, tmp_file)
+    print_res("S", res, tmp_file)
 
     assert open(os.path.normpath(tmp_file), "r").read() == "2 1\n0 2\n"
 
 
 def test_CYK1():
     prods = [("S", ["a", "S", "b", "S"]), ("S", ["eps"])]
+    start, prods = to_CNF(prods)
 
-    assert CYK(to_CNF(prods), "aabaabbb")
-    assert CYK(to_CNF(prods), "")
-    assert not CYK(to_CNF(prods), "aabaaabbb")
-    assert not CYK(to_CNF(prods), "accb")
+    assert CYK(start, prods, "aabaabbb")
+    assert CYK(start, prods, "")
+    assert not CYK(start, prods, "aabaaabbb")
+    assert not CYK(start, prods, "accb")
 
 
 def test_CYK2():
     prods = [("S", ["a", "S"]), ("S", ["b", "S"]), ("S", ["S", "a"]), ("S", ["S", "b"]), ("S", ["eps"])]
+    start, prods = to_CNF(prods)
 
-    assert CYK(to_CNF(prods), "a")
-    assert CYK(to_CNF(prods), "b")
-    assert CYK(to_CNF(prods), "")
-    assert CYK(to_CNF(prods), "bbbaaaaa")
-    assert not CYK(to_CNF(prods), "c")
+    assert CYK(start, prods, "a")
+    assert CYK(start, prods, "b")
+    assert CYK(start, prods, "")
+    assert CYK(start, prods, "bbbaaaaa")
+    assert not CYK(start, prods, "c")
 
 
 def test_CYK3():
     prods = [("S", ["A", "B", "C"]), ("A", ["a", "A"]), ("A", ["eps"]),
              ("B", ["b", "B"]), ("B", ["eps"]), ("C", ["c", "C"]), ("C", ["eps"])]
+    start, prods = to_CNF(prods)
 
-    assert CYK(to_CNF(prods), "abc")
-    assert CYK(to_CNF(prods), "")
-    assert CYK(to_CNF(prods), "aabbbbccccc")
-    assert CYK(to_CNF(prods), "aaac")
-    assert not CYK(to_CNF(prods), "ba")
-    assert not CYK(to_CNF(prods), "acb")
+    assert CYK(start, prods, "abc")
+    assert CYK(start, prods, "")
+    assert CYK(start, prods, "aabbbbccccc")
+    assert CYK(start, prods, "aaac")
+    assert not CYK(start, prods, "ba")
+    assert not CYK(start, prods, "acb")
 
 
 def test_Hellings1():
@@ -129,6 +132,6 @@ def test_Hellings4():
     assert ("A", 2, 2) in res
     assert ("S", 1, 0) in res
     assert ("S", 0, 0) in res
-    assert ("A00", 1, 0) in res
+    assert ("A0", 1, 0) in res
 
 
