@@ -24,19 +24,53 @@ def print_grammar(prods, filename):
             file.write(prod[0] + " " + " ".join(prod[1]) + "\n")
 
 
-def add_new_start(prods):
-    prods.append(("S000", ["S"]))
-    prods.append(("S000", [eps]))
+def add_new_start(start, prods):
+    nonterms = set()
+    for prod in prods:
+        nonterms.add(prod[0])
+        for symb in prod[1]:
+            if not is_term(symb):
+                nonterms.add(symb)
+                
+    cnt = 0
+    find = False
 
-    return prods
+    while not find:
+        if not (start + str(cnt)) in nonterms:
+            find = True
+        else:
+            cnt += 1
+
+    prods.append((start + str(cnt), [start]))
+    prods.append((start + str(cnt), [eps]))
+    start = start + str(cnt)
+
+    return start, prods
 
 
 def delete_long_prods(prods):
+    nonterms = set()
+    for prod in prods:
+        nonterms.add(prod[0])
+        for symb in prod[1]:
+            if not is_term(symb):
+                nonterms.add(symb)
+
     new_prods = []
     cnt = 0
     for prod in prods:
         if (len(prod[1]) > 2):
-            new_nonterms = ["A" + str(cnt) + str(i) for i in range(len(prod[1]) - 1)]
+            new_nonterms = []
+            for i in range(len(prod[1]) - 1):
+                num = 0
+                find = False
+                while not find:
+                    if not ("A" + str(num)) in nonterms:
+                        find = True
+                    else:
+                        num += 1
+                new_nonterms.append("A" + str(num))
+            nonterms |= set(new_nonterms)
             last = prod[0]
             for i, new_nonterm in enumerate(new_nonterms):
                 if i + 2 < len(prod[1]):
@@ -51,7 +85,7 @@ def delete_long_prods(prods):
     return new_prods
 
 
-def delete_eps_prods(prods):
+def delete_eps_prods(start, prods):
     new_prods = []
     eps_prod_nonterms = set()
     for prod in prods:
@@ -76,7 +110,7 @@ def delete_eps_prods(prods):
                     and len(perm_list) != len(prod[1]):
                 res_prods.append((prod[0], [symb for i, symb in enumerate(prod[1]) if ((perm >> i) & 1) == False]))
 
-    return add_new_start(res_prods)
+    return add_new_start(start, res_prods)
 
 
 def delete_chain_prods(prods):
@@ -181,19 +215,21 @@ def delete_pair_term(prods):
 
 
 def to_CNF(prods):
+    start = "S"
     prods = delete_long_prods(prods)
-    prods = delete_eps_prods(prods)
+    start, prods = delete_eps_prods(start, prods)
     prods = delete_chain_prods(prods)
-    prods = delete_useless_nonterm("S000", prods)
+    prods = delete_useless_nonterm(start, prods)
     prods = delete_pair_term(prods)
 
-    return prods
+    return start, prods
 
 
 def to_weak_CNF(prods):
+    start = "S"
     prods = delete_long_prods(prods)
     prods = delete_chain_prods(prods)
-    prods = delete_useless_nonterm("S", prods)
+    prods = delete_useless_nonterm(start, prods)
     prods = delete_pair_term(prods)
 
     return prods
@@ -201,5 +237,3 @@ def to_weak_CNF(prods):
 
 def convert(filename_in, filename_out):
     print_grammar(to_CNF(parse_grammar(filename_in)), filename_out)
-
-
