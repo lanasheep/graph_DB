@@ -19,27 +19,27 @@ def parse_graph(filename):
     return graph
 
 
-def print_res(res, filename):
+def print_res(start, res, filename):
     with open(filename, "w") as file:
         for (nonterm, u, v) in res:
-            if nonterm == "S":
+            if nonterm == start:
                 file.write(str(u) + " " + str(v) + "\n")
 
 
-def CYK(prods, word):
+def CYK(start, prods, word):
     dict = defaultdict(list)
     for prod in prods:
         if (len(prod[1]) == 1) and is_term(prod[1][0]):
             dict[prod[1][0]].append(prod[0])
 
-    dp = [[[] for i in range(100)] for i in range(100)]
+    dp = [[[] for i in range(len(word) + 1)] for i in range(len(word) + 1)]
 
     for i, symb in enumerate(word):
         dp[i][i + 1] += dict[symb]
 
     n = len(word)
     if not n:
-        return "S000" in dict[eps]
+        return start in dict[eps]
 
     for len_seg in range(2, n + 1):
         for prod in prods:
@@ -51,7 +51,7 @@ def CYK(prods, word):
                         if a in dp[left][mid] and b in dp[mid][left + len_seg]:
                             dp[left][left + len_seg].append(prod[0])
 
-    return "S000" in dp[0][n]
+    return start in dp[0][n]
 
 
 def Hellings(prods, graph):
@@ -78,20 +78,21 @@ def Hellings(prods, graph):
     for element in res:
         q.put(element)
 
+    filtered_prods = [prod for prod in prods if len(prod[1]) == 2 and \
+                      (not is_term(prod[1][0])) and (not is_term(prod[1][1]))]
+
     while not q.empty():
         nonterm, u, v = q.get()
         for nonterm_, u_, v_ in res:
             if v == u_:
-                for prod in prods:
-                    if len(prod[1]) == 2 and (not is_term(prod[1][0])) and (not is_term(prod[1][1])) and \
-                            (prod[1][0] == nonterm) and (prod[1][1] == nonterm_) and ((prod[0], u, v_) not in res):
+                for prod in filtered_prods:
+                    if  (prod[1][0] == nonterm) and (prod[1][1] == nonterm_) and ((prod[0], u, v_) not in res):
                         q.put((prod[0], u, v_))
                         res.append((prod[0], u, v_))
         for nonterm_, u_, v_ in res:
             if v_ == u:
-                for prod in prods:
-                    if len(prod[1]) == 2 and (not is_term(prod[1][0])) and (not is_term(prod[1][1])) and \
-                            (prod[1][0] == nonterm_) and (prod[1][1] == nonterm) and ((prod[0], u_, v) not in res):
+                for prod in filtered_prods:
+                    if (prod[1][0] == nonterm_) and (prod[1][1] == nonterm) and ((prod[0], u_, v) not in res):
                         q.put((prod[0], u_, v))
                         res.append((prod[0], u_, v))
 
