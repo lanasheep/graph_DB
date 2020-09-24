@@ -39,11 +39,12 @@ def test_delete_long_prods():
 
 def test_delete_eps_prods():
     prods = [("S", ["A", "B"]), ("A", ["eps"]), ("A", ["a"]), ("B", ["eps"]), ("B", ["b"])]
-    res_prods = delete_eps_prods(prods)
+    res_start, res_prods = delete_eps_prods("S", prods)
 
     assert len(res_prods) == 7
-    assert ("S000", ["S"]) in res_prods
-    assert ("S000", ["eps"]) in res_prods
+    assert res_start == "S0"
+    assert ("S0", ["S"]) in res_prods
+    assert ("S0", ["eps"]) in res_prods
     assert ("S", ["A"]) in res_prods
     assert ("S", ["B"]) in res_prods
     assert ("S", ["A", "B"]) in res_prods
@@ -84,15 +85,16 @@ def test_delete_pair_term():
 
 def test_to_CNF():
     prods = [("S", ["a", "S", "b"]), ("S", ["eps"])]
-    res_prods = to_CNF(prods)
+    res_start, res_prods = to_CNF(prods)
 
     assert len(res_prods) == 8
-    assert ("S000", ["eps"]) in res_prods
-    assert ('S000', ['N01', 'A00']) in res_prods
-    assert ('A00', ['S', 'N12']) in res_prods
-    assert ('S', ['N21', 'A00']) in res_prods
+    assert res_start == "S0"
+    assert ("S0", ["eps"]) in res_prods
+    assert ('S0', ['N01', 'A0']) in res_prods
+    assert ('A0', ['S', 'N12']) in res_prods
+    assert ('S', ['N21', 'A0']) in res_prods
     assert ("N01", ["a"]) in res_prods
     assert ("N21", ["a"]) in res_prods
-    assert ("A00", ["b"]) in res_prods
+    assert ("A0", ["b"]) in res_prods
     assert ("N12", ["b"]) in res_prods
 
