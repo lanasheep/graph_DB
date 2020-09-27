@@ -9,6 +9,19 @@ def is_term(symbol):
     return symbol[0].islower()
 
 
+def get_new_nonterm(nonterm, nonterms):
+    cnt = 0
+    find = False
+
+    while not find:
+        if not (nonterm + str(cnt)) in nonterms:
+            find = True
+        else:
+            cnt += 1
+
+    return nonterm + str(cnt)
+
+
 def parse_grammar(filename):
     prods = []
     with open(filename) as file:
@@ -31,19 +44,13 @@ def add_new_start(start, prods):
         for symb in prod[1]:
             if not is_term(symb):
                 nonterms.add(symb)
-                
-    cnt = 0
-    find = False
 
-    while not find:
-        if not (start + str(cnt)) in nonterms:
-            find = True
-        else:
-            cnt += 1
 
-    prods.append((start + str(cnt), [start]))
-    prods.append((start + str(cnt), [eps]))
-    start = start + str(cnt)
+    new_start = get_new_nonterm(start, nonterms)
+
+    prods.append((new_start, [start]))
+    prods.append((new_start, [eps]))
+    start = new_start
 
     return start, prods
 
@@ -60,16 +67,7 @@ def delete_long_prods(prods):
     cnt = 0
     for prod in prods:
         if (len(prod[1]) > 2):
-            new_nonterms = []
-            for i in range(len(prod[1]) - 1):
-                num = 0
-                find = False
-                while not find:
-                    if not ("A" + str(num)) in nonterms:
-                        find = True
-                    else:
-                        num += 1
-                new_nonterms.append("A" + str(num))
+            new_nonterms = [get_new_nonterm("A", nonterms) for _ in range(len(prod[1]) - 1)]
             nonterms |= set(new_nonterms)
             last = prod[0]
             for i, new_nonterm in enumerate(new_nonterms):
@@ -237,3 +235,5 @@ def to_weak_CNF(prods):
 
 def convert(filename_in, filename_out):
     print_grammar(to_CNF(parse_grammar(filename_in)), filename_out)
+
+
