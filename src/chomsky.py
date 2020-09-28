@@ -26,7 +26,7 @@ def parse_grammar(filename):
     prods = []
     with open(filename) as file:
         for line in file.readlines():
-            prods.append((line[0], line.split()[1:]))
+            prods.append((line.split()[0], line.split()[1:]))
 
     return prods
 
@@ -212,8 +212,8 @@ def delete_pair_term(prods):
     return new_prods
 
 
-def to_CNF(prods):
-    start = "S"
+def to_CNF(prods, symb = "S"):
+    start = symb
     prods = delete_long_prods(prods)
     start, prods = delete_eps_prods(start, prods)
     prods = delete_chain_prods(prods)
@@ -223,8 +223,8 @@ def to_CNF(prods):
     return start, prods
 
 
-def to_weak_CNF(prods):
-    start = "S"
+def to_weak_CNF(prods, symb = "S"):
+    start = symb
     prods = delete_long_prods(prods)
     prods = delete_chain_prods(prods)
     prods = delete_useless_nonterm(start, prods)
