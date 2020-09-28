@@ -32,13 +32,13 @@ def CYK(start, prods, word):
         if (len(prod[1]) == 1) and is_term(prod[1][0]):
             dict[prod[1][0]].append(prod[0])
 
-    dp = [[[] for i in range(len(word) + 1)] for i in range(len(word) + 1)]
+    n = len(word)
+    dp = [[[] for _ in range(n + 1)] for _ in range(n + 1)]
 
     for i, symb in enumerate(word):
         dp[i][i + 1] += dict[symb]
 
-    n = len(word)
-    if not n:
+    if not n or (n == 1 and word[0] == ""):
         return start in dict[eps]
 
     for len_seg in range(2, n + 1):
@@ -86,7 +86,7 @@ def Hellings(prods, graph):
         for nonterm_, u_, v_ in res:
             if v == u_:
                 for prod in filtered_prods:
-                    if  (prod[1][0] == nonterm) and (prod[1][1] == nonterm_) and ((prod[0], u, v_) not in res):
+                    if (prod[1][0] == nonterm) and (prod[1][1] == nonterm_) and ((prod[0], u, v_) not in res):
                         q.put((prod[0], u, v_))
                         res.append((prod[0], u, v_))
         for nonterm_, u_, v_ in res:
@@ -108,5 +108,5 @@ def solve_CYK(filename_grammar, filename_word):
 
 def solve_Hellings(filename_grammar, filename_graph, filename_res):
     res = Hellings(parse_grammar(filename_grammar), parse_graph(filename_graph))
-    print_res(res, filename_res)
+    print_res("S", res, filename_res)
 
