@@ -32,6 +32,7 @@ OP_MINUS = "-"
 OP_GR = ">"
 OP_EQ = "="
 KW_ID = "id"
+KW_SELECT = "select"
 KW_COUNT = "count"
 KW_EXISTS = "exists"
 KW_FROM = "from"
@@ -40,7 +41,7 @@ KW_LIST = "list"
 KW_CONNECT = "connect"
 KW_TO = "to"
 SYMB = [a − z][a − z]*
-INT = 0 | [1 − 9][0 − 9]∗
+INT = 0 | [1 − 9][0 − 9]*
 NT_NAME = [A − Z][a − z]*
 STRING = "["([aA − zZ] | [0 − 9] | ("-"| " " | "_" | "/" | "."))*"]"
 ```
