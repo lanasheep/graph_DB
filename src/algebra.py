@@ -116,8 +116,6 @@ def build_automata(prods):
         automata = reg2min_dfa(prod[1])
         nonterm = prod[0]
         nonterms.add(nonterm)
-        if eps in prod[1]:
-            eps_nonterms.add(nonterm)
         dict = automata.to_dict()
         state_values = set()
         for u in dict.keys():
@@ -135,6 +133,8 @@ def build_automata(prods):
                     continue
                 v = dict[u][symb]
                 edges.append((nodes[(u.value, cnt)], symb, nodes[(v.value, cnt)]))
+        if eps in prod[1] or automata.start_state in automata.final_states:
+            eps_nonterms.add(nonterm)
         start_set[nodes[(automata.start_state.value, cnt)]] = nonterm
         for state in list(automata.final_states):
             final_set[nodes[(state.value, cnt)]] = nonterm
