@@ -105,6 +105,7 @@ def test_solve_tensor1(tmp_path):
     file_grammar.write_text("S a | eps")
     file_graph.write_text("0 b 1\n1 b 0")
     solve_tensor_alg(file_grammar, file_graph, file_res)
+
     assert open(os.path.normpath(file_res), "r").read() == \
 ". [a] \n\
 . . \n\
@@ -119,6 +120,7 @@ def test_solve_tensor2(tmp_path):
     file_grammar.write_text("S a b | a")
     file_graph.write_text("0 b 1\n1 a 0")
     solve_tensor_alg(file_grammar, file_graph, file_res)
+
     assert open(os.path.normpath(file_res), "r").read() == \
 ". . [a] \n\
 . . . \n\
@@ -134,6 +136,7 @@ def test_solve_tensor3(tmp_path):
     file_grammar.write_text("S A B | A S1\nS1 S B\nA a\nB b")
     file_graph.write_text("0 a 1\n1 a 2\n2 b 3\n3 b 2")
     solve_tensor_alg(file_grammar, file_graph, file_res)
+
     assert open(os.path.normpath(file_res), "r").read() == \
 ". . [A] . . . . . . . \n\
 . . . . . . . . . . \n\
@@ -153,15 +156,14 @@ def test_solve_tensor4(tmp_path):
     file_grammar = tmp_path / "grammar.txt"
     file_graph = tmp_path / "graph.txt"
     file_res = tmp_path / "res.txt"
-    file_grammar.write_text("S (a S b)* | eps")
+    file_grammar.write_text("S (a S b)*")
     file_graph.write_text("0 a 1\n1 a 2\n2 b 3\n3 b 4")
     solve_tensor_alg(file_grammar, file_graph, file_res)
+
     assert open(os.path.normpath(file_res), "r").read() == \
-". . . [a] . \n\
-. . . . . \n\
-. . . [a] . \n\
-. . . . [S] \n\
-. . [b] . . \n\
+". [a] . \n\
+. . [S] \n\
+[b] . . \n\
 0 0\n\
 0 4\n\
 1 1\n\
@@ -178,6 +180,7 @@ def test_solve_tensor5(tmp_path):
     file_grammar.write_text("S (a S1)* (b S1)*\nS1 c | d | eps")
     file_graph.write_text("0 a 1\n1 c 2\n2 b 3\n3 d 0")
     solve_tensor_alg(file_grammar, file_graph, file_res)
+
     assert open(os.path.normpath(file_res), "r").read() == \
 ". [b] . [a] . . \n\
 . . [S1] . . . \n\
@@ -189,13 +192,8 @@ def test_solve_tensor5(tmp_path):
 0 1\n\
 0 2\n\
 0 3\n\
+1 1\n\
 2 0\n\
-2 3\n"
-
-
-def test_m():
-    solve_matrix_alg("grammar4.txt", "graph.txt", "res.txt")
-
-
-def test_t():
-    solve_tensor_alg("grammar1.txt", "graph.txt", "res.txt")
+2 2\n\
+2 3\n\
+3 3\n"
