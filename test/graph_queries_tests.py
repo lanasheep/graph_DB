@@ -38,7 +38,7 @@ def test_list1(tmp_path, capsys):
     file1.write_text("0 a 1\n1 b 2")
     file2.write_text("0 a 1\n1 a 0")
     file_in = tmp_path / "file.txt"
-    file_in.write_text("connect to [" + os.path.normpath(top_dir) + "];\nlist;")
+    file_in.write_text("connect to [" + os.path.normpath(top_dir) + "];\nlist all;")
     process(get_stream(True, os.path.normpath(file_in)))
     out, err = capsys.readouterr()
 
@@ -56,11 +56,41 @@ def test_list2(tmp_path, capsys):
     file1.write_text("0 a 1\n1 b 2")
     file2.write_text("0 a 1\n1 a 0")
     file_in = tmp_path / "file.txt"
-    file_in.write_text("connect to [" + os.path.normpath(dir1) + "];\nlist [" + os.path.normpath(dir2) + "];")
+    file_in.write_text("connect to [" + os.path.normpath(dir1) + "];\nlist all [" + os.path.normpath(dir2) + "];")
     process(get_stream(True, os.path.normpath(file_in)))
     out, err = capsys.readouterr()
 
     assert out == "0 a 1\n1 a 0\n\n"
+    assert err == ""
+
+
+def test_list3(tmp_path, capsys):
+    dir1 = tmp_path / "dir1"
+    dir1.mkdir()
+    file1 = dir1 / "graph1.txt"
+    file2 = dir1 / "graph2.txt"
+    file1.write_text("0 a 1\n1 b 2\n2 c 3")
+    file2.write_text("0 a 1\n1 a 0\n1 b 2")
+    file_in = tmp_path / "file.txt"
+    file_in.write_text("connect to [" + os.path.normpath(dir1) + "];\nlist [" + os.path.normpath(file2) + "];")
+    process(get_stream(True, os.path.normpath(file_in)))
+    out, err = capsys.readouterr()
+
+    assert out == "a b\n"
+    assert err == ""
+
+
+def test_list4(tmp_path, capsys):
+    file1 = tmp_path / "graph1.txt"
+    file2 = tmp_path / "graph2.txt"
+    file1.write_text("0 a 1\n1 b 2\n2 c 3")
+    file2.write_text("0 d 1\n1 d 0\n1 d 2\n2 c 1")
+    file_in = tmp_path / "file.txt"
+    file_in.write_text("list [" + os.path.normpath(file2) + "];")
+    process(get_stream(True, os.path.normpath(file_in)))
+    out, err = capsys.readouterr()
+
+    assert out == "c d\n"
     assert err == ""
 
 

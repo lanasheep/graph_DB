@@ -1,8 +1,7 @@
 ### syntax:
 ```
 script: EPS | stmt SEMI script
-stmt: KW_CONNECT KW_TO STRING | lst | select_stmt | named_pattern
-lst: KW_LIST | KW_LIST STRING
+stmt: KW_CONNECT KW_TO STRING | KW_LIST KW_ALL? STRING? | select_stmt | named_pattern
 named_pattern: NT_NAME OP_EQ pattern
 select_stmt: KW_SELECT func KW_FROM STRING KW_WHERE where_expr
 func: KW_GET | KW_COUNT | KW_EXISTS 
@@ -35,6 +34,7 @@ KW_EXISTS = "exists"
 KW_FROM = "from"
 KW_WHERE = "where"
 KW_LIST = "list"
+KW_ALL : 'all' ;
 KW_CONNECT = "connect"
 KW_TO = "to"
 SYMB = [a − z][a − z]*
@@ -62,8 +62,12 @@ connect to [\home\user\graph_db]
 
 ######by default displays graphs from the connected database if no path is specified
 ```
-list
-list [\home\user\another_graph_db]
+list all
+list all [\home\user\another_graph_db]
+```
+######print set of different edge labels in the specified graph
+```
+list [\home\user\agraph_db\graph1.txt]
 ```
 #### select statements
 

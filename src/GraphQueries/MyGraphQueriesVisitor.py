@@ -61,12 +61,20 @@ class MyGraphQueriesVisitor(ParseTreeVisitor):
         if ctx.getChild(0).getText() == "connect":
             self.addr = ctx.STRING().getText()[1:-1]
         elif ctx.getChild(0).getText() == "list":
-            if ctx.getChildCount() == 2:
-                path = ctx.STRING().getText()[1:-1]
+            if ctx.getChild(1).getText() == "all":
+                if ctx.getChildCount() == 3:
+                    path = ctx.STRING().getText()[1:-1]
+                else:
+                    path = self.addr
+                for file in sorted(os.listdir(path)):
+                    print(open(os.path.join(path, file), "r").read() + "\n")
             else:
-                path = self.addr
-            for file in sorted(os.listdir(path)):
-                print(open(os.path.join(path, file), "r").read() + "\n")
+                filename = ctx.STRING().getText()[1:-1]
+                labels = set()
+                with open(os.path.join(filename))  as file:
+                    for line in file.readlines():
+                        labels.add(line.split()[1])
+                print(" ".join(sorted(list(labels))))
         else:
             self.visitChildren(ctx)
 

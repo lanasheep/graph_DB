@@ -3,7 +3,7 @@ grammar GraphQueries;
 script : (stmt SEMI)* EOF ;
 
 stmt : KW_CONNECT KW_TO STRING
-     | KW_LIST STRING?
+     | KW_LIST KW_ALL? STRING?
      | select_stmt
      | named_pattern
      ;
@@ -62,6 +62,7 @@ KW_EXISTS : 'exists' ;
 KW_FROM : 'from' ;
 KW_WHERE : 'where' ;
 KW_LIST : 'list' ;
+KW_ALL : 'all' ;
 KW_CONNECT : 'connect' ;
 KW_TO : 'to' ;
 INT : '0'
