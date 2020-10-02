@@ -6,8 +6,8 @@ from chomsky import to_weak_CNF
 from algebra import matrix_alg
 from algebra import tensor_alg
 from chomsky import get_new_nonterm
-from cyk import parse_graph
 from cyk import Hellings
+from graph_lang import *
 if __name__ is not None and "." in __name__:
     from .GraphQueriesParser import GraphQueriesParser
 else:
@@ -29,29 +29,33 @@ class MyGraphQueriesVisitor(ParseTreeVisitor):
         return self.prods.items()
 
 
-    def select_get_tensors(self, start, finish, pattern, graph):
-        nonterms = self.prods.keys()
-        add_nonterm = get_new_nonterm("S", nonterms)
-        _, matrix, _, n = tensor_alg(list(self.prods.items()) + [(add_nonterm, pattern)], graph)
+    def get_ans(self, start, finish, nonterm, matrix, n):
         res = []
         if start == "_" and finish == "_":
             for i in range(n):
                 for j in range(n):
-                    if matrix[add_nonterm][i, j]:
+                    if matrix[nonterm][i, j]:
                         res.append((i, j))
         elif start == "_":
             for i in range(n):
-                if matrix[add_nonterm][i, int(finish)]:
+                if matrix[nonterm][i, int(finish)]:
                     res.append((i, int(finish)))
         elif finish == "_":
             for i in range(n):
-                if matrix[add_nonterm][int(start), i]:
+                if matrix[nonterm][int(start), i]:
                     res.append((int(start), i))
         else:
-            if matrix[add_nonterm][int(start), int(finish)]:
+            if matrix[nonterm][int(start), int(finish)]:
                 res.append((int(start), int(finish)))
 
         return res
+
+
+    def select_get_tensors(self, start, finish, pattern, graph):
+        nonterms = self.prods.keys()
+        add_nonterm = get_new_nonterm("S", nonterms)
+        _, matrix, _, n = tensor_alg(list(self.prods.items()) + [(add_nonterm, pattern)], graph)
+        return self.get_ans(start, finish, add_nonterm, matrix, n)
 
 
     def select_get(self, start, finish, pattern, graph, alg):
@@ -85,6 +89,13 @@ class MyGraphQueriesVisitor(ParseTreeVisitor):
                     ans.append((u, v))
 
         return ans
+
+
+    def select_get_graph_lang(self, start, finish, pattern, graph, automata):
+        nonterms = self.prods.keys()
+        add_nonterm = get_new_nonterm("S", nonterms)
+        _, matrix, _, n = graph_lang_intersect(list(self.prods.items()) + [(add_nonterm, pattern)], automata, graph)
+        return self.get_ans(start, finish, add_nonterm, matrix, n)
 
 
     # Visit a parse tree produced by GraphQueriesParser#script.
@@ -126,13 +137,20 @@ class MyGraphQueriesVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by GraphQueriesParser#select_stmt.
     def visitSelect_stmt(self, ctx:GraphQueriesParser.Select_stmtContext):
-        pattern = self.visitPattern(ctx.where_expr().pattern())
-        if ctx.getChildCount() == 6 or (ctx.getChildCount() == 7 and ctx.alg().getChild(1).getText() == "tensors"):
-            res = self.select_get_tensors(ctx.where_expr().getChild(1).getText(), ctx.where_expr().getChild(8).getText(), pattern, \
-                              parse_graph(ctx.STRING().getText()[1:-1]))
+        if ctx.from_expr().getChildCount() == 1:
+            pattern = self.visitPattern(ctx.where_expr().pattern())
+            if ctx.getChildCount() == 6 or (ctx.getChildCount() == 7 and ctx.alg().getChild(1).getText() == "tensors"):
+                res = self.select_get_tensors(ctx.where_expr().getChild(1).getText(),
+                                              ctx.where_expr().getChild(8).getText(), pattern,
+                                              parse_graph(ctx.from_expr().STRING().getText()[1:-1]))
+            else:
+                res = self.select_get(ctx.where_expr().getChild(1).getText(), ctx.where_expr().getChild(8).getText(),
+                                      pattern, parse_graph(ctx.from_expr().STRING().getText()[1:-1]), ctx.alg().getChild(1).getText())
         else:
-            res = self.select_get(ctx.where_expr().getChild(1).getText(), ctx.where_expr().getChild(8).getText(), pattern, \
-                              parse_graph(ctx.STRING().getText()[1:-1]), ctx.alg().getChild(1).getText())
+            pattern = self.visitPattern(ctx.where_expr().pattern())
+            automata = self.visitGraph_expr(ctx.from_expr().graph_expr())
+            res = self.select_get_graph_lang(ctx.where_expr().getChild(1).getText(), ctx.where_expr().getChild(8).getText(),
+                                      pattern, parse_graph(ctx.from_expr().STRING().getText()[1:-1]), automata)
         if ctx.func().getText() == "exists":
             if res:
                 print("exists")
@@ -144,6 +162,17 @@ class MyGraphQueriesVisitor(ParseTreeVisitor):
             for u, v in res:
                 print(str(u) + " " + str(v))
 
+
+    # Visit a parse tree produced by GraphQueriesParser#graph_expr.
+    def visitGraph_expr(self, ctx: GraphQueriesParser.Graph_exprContext):
+        if ctx.getChildCount() == 1:
+            return build_automata_from_graph(ctx.STRING()[1:-1])
+        elif ctx.getChild(0).getText() == "intersec":
+            return intersec(self.visitGraph_expr(ctx.getChild(2)), self.visitGraph_expr(ctx.getChild(4)))
+        elif ctx.getChild(0).getText() == "union":
+            return union(self.visitGraph_expr(ctx.getChild(2)), self.visitGraph_expr(ctx.getChild(4)))
+        else:
+            return compl(self.visitGraph_expr(ctx.getChild(2)))
 
     # Visit a parse tree produced by GraphQueriesParser#pattern.
     def visitPattern(self, ctx:GraphQueriesParser.PatternContext):
