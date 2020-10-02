@@ -39,7 +39,7 @@ def test_check_named_pattern(tmp_path, capsys):
 def test_check_script(tmp_path, capsys):
     tmp_file = tmp_path / "file.txt"
     tmp_file.write_text("connect to [/home/user/graph_db];\nS = a S b S | ();\n\
-select count u from [g1.txt] where (v.id = 10) - S -> (u);")
+select count from [g1.txt] where (10) - S -> (_);")
     check(get_stream(True, os.path.normpath(tmp_file)))
     out, err = capsys.readouterr()
 
@@ -49,7 +49,7 @@ select count u from [g1.txt] where (v.id = 10) - S -> (u);")
 
 def test_check_select_stmt(tmp_path, capsys):
     tmp_file = tmp_path / "file.txt"
-    tmp_file.write_text("select exists (u,v) from [g1.txt] where (u) - (a | b)* | c -> (v);")
+    tmp_file.write_text("select exists from [g1.txt] where (_) - (a | b)* | c -> (_);")
     check(get_stream(True, os.path.normpath(tmp_file)))
     out, err = capsys.readouterr()
 
@@ -78,7 +78,7 @@ def test_check_forgot_semicolon(tmp_path, capsys):
 
 def test_check_wrong_syntax(tmp_path, capsys):
     tmp_file = tmp_path / "file.txt"
-    tmp_file.write_text("select count u from [g1.txt] where (v.id = 10) - S -> u;")
+    tmp_file.write_text("select count from [g1.txt] where (0) - S -> u;")
     check(get_stream(True, os.path.normpath(tmp_file)))
     out, err = capsys.readouterr()
 
@@ -87,7 +87,7 @@ def test_check_wrong_syntax(tmp_path, capsys):
 
 def test_check_incorrect_pattern(tmp_path, capsys):
     tmp_file = tmp_path / "file.txt"
-    tmp_file.write_text("A = ((a | b)+ | (c)*) |")
+    tmp_file.write_text("A = ((a | b)* | (c)*) |")
     check(get_stream(True, os.path.normpath(tmp_file)))
     out, err = capsys.readouterr()
 

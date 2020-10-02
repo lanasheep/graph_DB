@@ -1,4 +1,4 @@
-# Generated from GraphQueries.g4 by ANTLR 4.8
+#!/usr/bin/env python3
 from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .GraphQueriesParser import GraphQueriesParser
@@ -6,115 +6,131 @@ else:
     from GraphQueriesParser import GraphQueriesParser
 
 # This class defines a complete listener for a parse tree produced by GraphQueriesParser.
-class GraphQueriesListener(ParseTreeListener):
+class MyGraphQueriesListener(ParseTreeListener):
+    def __init__(self, parent=None):
+        self.nodes = []
+        self.edges = []
+        self.stack = []
 
     # Enter a parse tree produced by GraphQueriesParser#script.
     def enterScript(self, ctx:GraphQueriesParser.ScriptContext):
-        pass
+        num = len(self.nodes)
+        self.nodes.append((num, "script"))
+        self.stack.append(num)
 
     # Exit a parse tree produced by GraphQueriesParser#script.
     def exitScript(self, ctx:GraphQueriesParser.ScriptContext):
-        pass
-
+        self.stack.pop()
 
     # Enter a parse tree produced by GraphQueriesParser#stmt.
     def enterStmt(self, ctx:GraphQueriesParser.StmtContext):
-        pass
+        num = len(self.nodes)
+        self.nodes.append((len(self.nodes), "stmt"))
+        self.edges.append((self.stack[-1], num))
+        self.stack.append(num)
 
     # Exit a parse tree produced by GraphQueriesParser#stmt.
     def exitStmt(self, ctx:GraphQueriesParser.StmtContext):
-        pass
-
+        self.stack.pop()
 
     # Enter a parse tree produced by GraphQueriesParser#named_pattern.
     def enterNamed_pattern(self, ctx:GraphQueriesParser.Named_patternContext):
-        pass
+        num = len(self.nodes)
+        self.nodes.append((len(self.nodes), "named_pattern"))
+        self.edges.append((self.stack[-1], num))
+        self.stack.append(num)
 
     # Exit a parse tree produced by GraphQueriesParser#named_pattern.
     def exitNamed_pattern(self, ctx:GraphQueriesParser.Named_patternContext):
-        pass
-
+        self.stack.pop()
 
     # Enter a parse tree produced by GraphQueriesParser#select_stmt.
     def enterSelect_stmt(self, ctx:GraphQueriesParser.Select_stmtContext):
-        pass
+        num = len(self.nodes)
+        self.nodes.append((len(self.nodes), "select_stmt"))
+        self.edges.append((self.stack[-1], num))
+        self.stack.append(num)
 
     # Exit a parse tree produced by GraphQueriesParser#select_stmt.
     def exitSelect_stmt(self, ctx:GraphQueriesParser.Select_stmtContext):
-        pass
-
-
-    # Enter a parse tree produced by GraphQueriesParser#func.
-    def enterFunc(self, ctx:GraphQueriesParser.FuncContext):
-        pass
-
-    # Exit a parse tree produced by GraphQueriesParser#func.
-    def exitFunc(self, ctx:GraphQueriesParser.FuncContext):
-        pass
-
+        self.stack.pop()
 
     # Enter a parse tree produced by GraphQueriesParser#where_expr.
     def enterWhere_expr(self, ctx:GraphQueriesParser.Where_exprContext):
-        pass
+        num = len(self.nodes)
+        self.nodes.append((len(self.nodes), "where_expr"))
+        self.edges.append((self.stack[-1], num))
+        self.stack.append(num)
 
     # Exit a parse tree produced by GraphQueriesParser#where_expr.
     def exitWhere_expr(self, ctx:GraphQueriesParser.Where_exprContext):
-        pass
-
+        self.stack.pop()
 
     # Enter a parse tree produced by GraphQueriesParser#v_expr.
     def enterV_expr(self, ctx:GraphQueriesParser.V_exprContext):
-        pass
+        num = len(self.nodes)
+        self.nodes.append((len(self.nodes), "v_expr"))
+        self.edges.append((self.stack[-1], num))
+        self.stack.append(num)
 
     # Exit a parse tree produced by GraphQueriesParser#v_expr.
     def exitV_expr(self, ctx:GraphQueriesParser.V_exprContext):
-        pass
-
+        self.stack.pop()
 
     # Enter a parse tree produced by GraphQueriesParser#pattern.
     def enterPattern(self, ctx:GraphQueriesParser.PatternContext):
-        pass
+        num = len(self.nodes)
+        self.nodes.append((len(self.nodes), "pattern"))
+        self.edges.append((self.stack[-1], num))
+        self.stack.append(num)
 
     # Exit a parse tree produced by GraphQueriesParser#pattern.
     def exitPattern(self, ctx:GraphQueriesParser.PatternContext):
-        pass
-
+        self.stack.pop()
 
     # Enter a parse tree produced by GraphQueriesParser#elem.
     def enterElem(self, ctx:GraphQueriesParser.ElemContext):
-        pass
+        num = len(self.nodes)
+        self.nodes.append((len(self.nodes), "elem"))
+        self.edges.append((self.stack[-1], num))
+        self.stack.append(num)
 
     # Exit a parse tree produced by GraphQueriesParser#elem.
     def exitElem(self, ctx:GraphQueriesParser.ElemContext):
-        pass
-
+        self.stack.pop()
 
     # Enter a parse tree produced by GraphQueriesParser#seq.
     def enterSeq(self, ctx:GraphQueriesParser.SeqContext):
-        pass
+        num = len(self.nodes)
+        self.nodes.append((len(self.nodes), "seq"))
+        self.edges.append((self.stack[-1], num))
+        self.stack.append(num)
 
     # Exit a parse tree produced by GraphQueriesParser#seq.
     def exitSeq(self, ctx:GraphQueriesParser.SeqContext):
-        pass
-
+        self.stack.pop()
 
     # Enter a parse tree produced by GraphQueriesParser#seq_elem.
     def enterSeq_elem(self, ctx:GraphQueriesParser.Seq_elemContext):
-        pass
+        num = len(self.nodes)
+        self.nodes.append((len(self.nodes), "seq_elem"))
+        self.edges.append((self.stack[-1], num))
+        self.stack.append(num)
 
     # Exit a parse tree produced by GraphQueriesParser#seq_elem.
     def exitSeq_elem(self, ctx:GraphQueriesParser.Seq_elemContext):
-        pass
-
+        self.stack.pop()
 
     # Enter a parse tree produced by GraphQueriesParser#prim_pattern.
     def enterPrim_pattern(self, ctx:GraphQueriesParser.Prim_patternContext):
-        pass
+        num = len(self.nodes)
+        self.nodes.append((len(self.nodes), "prim_pattern"))
+        self.edges.append((self.stack[-1], num))
+        self.stack.append(num)
 
     # Exit a parse tree produced by GraphQueriesParser#prim_pattern.
     def exitPrim_pattern(self, ctx:GraphQueriesParser.Prim_patternContext):
-        pass
-
+        self.stack.pop()
 
 
 del GraphQueriesParser
