@@ -66,7 +66,25 @@ class MyGraphQueriesVisitor(ParseTreeVisitor):
             res = Hellings(new_prods, graph)
         else:
             res = matrix_alg(new_prods, graph)
-        return [(u, v) for (nonterm, u, v) in res if nonterm == add_nonterm]
+        ans = []
+        if start == "_" and finish == "_":
+            for nonterm, u, v in res:
+                if nonterm == add_nonterm:
+                    ans.append((u, v))
+        elif start == "_":
+            for nonterm, u, v in res:
+                if nonterm == add_nonterm and v == int(finish):
+                    ans.append((u, v))
+        elif finish == "_":
+            for nonterm, u, v in res:
+                if nonterm == add_nonterm and u == int(start):
+                    ans.append((u, v))
+        else:
+            for nonterm, u, v in res:
+                if nonterm == add_nonterm and u == int(start) and v == int(finish):
+                    ans.append((u, v))
+
+        return ans
 
 
     # Visit a parse tree produced by GraphQueriesParser#script.
