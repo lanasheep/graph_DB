@@ -6,6 +6,26 @@ from antlr_parser import check
 from antlr_parser import print_tree_dot
 
 
+def test_check_connect_stmt(tmp_path, capsys):
+    tmp_file = tmp_path / "file.txt"
+    tmp_file.write_text("connect to [/home/user/graph_db];")
+    check(get_stream(True, os.path.normpath(tmp_file)))
+    out, err = capsys.readouterr()
+
+    assert out == "ok, script is correct\n"
+    assert err == ""
+
+
+def test_check_list_stmt(tmp_path, capsys):
+    tmp_file = tmp_path / "file.txt"
+    tmp_file.write_text("list;")
+    check(get_stream(True, os.path.normpath(tmp_file)))
+    out, err = capsys.readouterr()
+
+    assert out == "ok, script is correct\n"
+    assert err == ""
+
+
 def test_check_named_pattern(tmp_path, capsys):
     tmp_file = tmp_path / "file.txt"
     tmp_file.write_text("S = a S b S | ();")
