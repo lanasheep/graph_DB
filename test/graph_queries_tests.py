@@ -422,3 +422,52 @@ def test_script(tmp_path, capsys):
 
     assert out == "4\n0 0\n0 1\n0 2\n0 4\n"
     assert err == ""
+
+
+def test_select_using_hellings1(tmp_path, capsys):
+    file_script = tmp_path / "script.txt"
+    file_graph = tmp_path / "graph.txt"
+    file_graph.write_text("0 a 1\n1 a 0")
+    file_script.write_text("S = a S b S;\nS = ();\nselect exists from [" + os.path.normpath(file_graph) + "] where (_) - S -> (_) using hellings;")
+    process(get_stream(True, os.path.normpath(file_script)))
+    out, err = capsys.readouterr()
+
+    assert out == "exists\n"
+    assert err == ""
+
+
+def test_select_using_hellings2(tmp_path, capsys):
+    file_script = tmp_path / "script.txt"
+    file_graph = tmp_path / "graph.txt"
+    file_graph.write_text("0 a 1\n1 b 2\n2 c 3")
+    file_script.write_text("select exists from [" + os.path.normpath(file_graph) + "] where (_) - a b b -> (_) using hellings;")
+    process(get_stream(True, os.path.normpath(file_script)))
+    out, err = capsys.readouterr()
+
+    assert out == "does not exist\n"
+    assert err == ""
+
+
+def test_select_using_matrices(tmp_path, capsys):
+    file_script = tmp_path / "script.txt"
+    file_graph = tmp_path / "graph.txt"
+    file_graph.write_text("0 a 1\n1 b 2\n2 a 3")
+    file_script.write_text("S = a;\nS = ();\nselect count from [" + os.path.normpath(file_graph) + "] where (_) - S S S -> (_) using matrices;")
+    process(get_stream(True, os.path.normpath(file_script)))
+    out, err = capsys.readouterr()
+
+    assert out == "6\n"
+    assert err == ""
+
+
+def test_select_using_tensors(tmp_path, capsys):
+    file_script = tmp_path / "script.txt"
+    file_graph = tmp_path / "graph.txt"
+    file_graph.write_text("0 a 1\n1 b 2\n2 a 3")
+    file_script.write_text("S = A B;\nA = a | ();\nB = b | ();\nselect get from [" + os.path.normpath(file_graph) + "]\
+     where (_) - S -> (2) using tensors;")
+    process(get_stream(True, os.path.normpath(file_script)))
+    out, err = capsys.readouterr()
+
+    assert out == "0 2\n1 2\n2 2\n"
+    assert err == ""

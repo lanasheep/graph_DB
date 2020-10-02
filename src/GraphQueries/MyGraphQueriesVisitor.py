@@ -2,9 +2,12 @@
 import os
 from collections import defaultdict
 from antlr4 import *
+from chomsky import to_weak_CNF
+from algebra import matrix_alg
 from algebra import tensor_alg
 from chomsky import get_new_nonterm
 from cyk import parse_graph
+from cyk import Hellings
 if __name__ is not None and "." in __name__:
     from .GraphQueriesParser import GraphQueriesParser
 else:
@@ -26,7 +29,7 @@ class MyGraphQueriesVisitor(ParseTreeVisitor):
         return self.prods.items()
 
 
-    def select_get(self, start, finish, pattern, graph):
+    def select_get_tensors(self, start, finish, pattern, graph):
         nonterms = self.prods.keys()
         add_nonterm = get_new_nonterm("S", nonterms)
         _, matrix, _, n = tensor_alg(list(self.prods.items()) + [(add_nonterm, pattern)], graph)
@@ -49,6 +52,21 @@ class MyGraphQueriesVisitor(ParseTreeVisitor):
                 res.append((int(start), int(finish)))
 
         return res
+
+
+    def select_get(self, start, finish, pattern, graph, alg):
+        nonterms = self.prods.keys()
+        add_nonterm = get_new_nonterm("S", nonterms)
+        new_prods = []
+        for nonterm in self.prods.keys():
+            lst = self.prods[nonterm].split(" | ")
+            new_prods += [(nonterm, element.split()) for element in lst]
+        new_prods = to_weak_CNF(new_prods + [(add_nonterm, pattern.split())], add_nonterm)
+        if alg == "hellings":
+            res = Hellings(new_prods, graph)
+        else:
+            res = matrix_alg(new_prods, graph)
+        return [(u, v) for (nonterm, u, v) in res if nonterm == add_nonterm]
 
 
     # Visit a parse tree produced by GraphQueriesParser#script.
@@ -91,8 +109,12 @@ class MyGraphQueriesVisitor(ParseTreeVisitor):
     # Visit a parse tree produced by GraphQueriesParser#select_stmt.
     def visitSelect_stmt(self, ctx:GraphQueriesParser.Select_stmtContext):
         pattern = self.visitPattern(ctx.where_expr().pattern())
-        res = self.select_get(ctx.where_expr().getChild(1).getText(), ctx.where_expr().getChild(8).getText(), pattern, \
+        if ctx.getChildCount() == 6 or (ctx.getChildCount() == 7 and ctx.alg().getChild(1).getText() == "tensors"):
+            res = self.select_get_tensors(ctx.where_expr().getChild(1).getText(), ctx.where_expr().getChild(8).getText(), pattern, \
                               parse_graph(ctx.STRING().getText()[1:-1]))
+        else:
+            res = self.select_get(ctx.where_expr().getChild(1).getText(), ctx.where_expr().getChild(8).getText(), pattern, \
+                              parse_graph(ctx.STRING().getText()[1:-1]), ctx.alg().getChild(1).getText())
         if ctx.func().getText() == "exists":
             if res:
                 print("exists")

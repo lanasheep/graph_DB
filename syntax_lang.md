@@ -3,8 +3,9 @@
 script: EPS | stmt SEMI script
 stmt: KW_CONNECT KW_TO STRING | KW_LIST KW_ALL? STRING? | select_stmt | named_pattern
 named_pattern: NT_NAME OP_EQ pattern
-select_stmt: KW_SELECT func KW_FROM STRING KW_WHERE where_expr
+select_stmt: KW_SELECT func KW_FROM STRING KW_WHERE where_expr alg?
 func: KW_GET | KW_COUNT | KW_EXISTS 
+alg: KW_USING KW_HELLINGS | KW_USING KW_MATRICES | KW_USING KW_TENSORS
 where_expr: LBR v_expr RBR OP_MINUS pattern OP_MINUS OP_GR LBR v_expr RBR
 v_expr: INT | UNDERSCORE 
 pattern: elem | elem MID pattern
@@ -34,9 +35,13 @@ KW_EXISTS = "exists"
 KW_FROM = "from"
 KW_WHERE = "where"
 KW_LIST = "list"
-KW_ALL : 'all' ;
+KW_ALL : "all" ;
 KW_CONNECT = "connect"
 KW_TO = "to"
+KW_USING = 'using'
+KW_HELLINGS = "hellings"
+KW_MATRICES = "matrices"
+KW_TENSORS = "tensors"
 SYMB = [a − z][a − z]*
 INT = 0 | [1 − 9][0 − 9]*
 NT_NAME = [A − Z]+
@@ -60,18 +65,18 @@ connect to [\home\user\graph_db]
 ```
 #### list
 
-######by default displays graphs from the connected database if no path is specified
+###### by default displays graphs from the connected database if no path is specified
 ```
 list all
 list all [\home\user\another_graph_db]
 ```
-######print set of different edge labels in the specified graph
+###### print set of different edge labels in the specified graph
 ```
 list [\home\user\agraph_db\graph1.txt]
 ```
 #### select statements
 
-######it is possible to specify the vertex number or write underscore instead (vertex with any number)
+###### it is possible to specify the vertex number or write underscore instead (vertex with any number)
 ###### getting all pairs of vertices that match the conditions:
 ```
 select get from [graph1.txt] where (_) - (a | b)* -> (_)
@@ -83,6 +88,10 @@ select count from [graph1.txt] where (2) - (a | b)* -> (_)
 ###### checking for the existence of a pair of vertices that match the conditions:
 ```
 select exists from [graph1.txt] where (1) - S -> (3)
+```
+###### it is possible to specify the used algorithm: "using hellings", "using matrices" or "using tensors" (by default the algorithm with tensors is used):
+```
+select count from [graph1.txt] where (2) - (a | b)* -> (_) using hellings
 ```
 #### script
 ```
