@@ -153,7 +153,16 @@ def build_automata(prods):
     for symb in data.keys():
         matrix_automata[symb] = scipy.sparse.csr_matrix((data[symb], (rows[symb], cols[symb])), shape=(sz, sz), dtype=bool)
 
-    return matrix_automata, start_set, final_set, edges, eps_nonterms, nonterms, sz
+    start_lst = ["" for _ in range(sz + 1)]
+    final_lst = ["" for _ in range(sz + 1)]
+
+    for num, nonterm in start_set.items():
+        start_lst[num] = nonterm
+
+    for num, nonterm in final_set.items():
+        final_lst[num] = nonterm
+
+    return matrix_automata, start_lst, final_lst, edges, eps_nonterms, nonterms, sz
 
 
 def tensor_alg(prods, graph):
@@ -185,38 +194,38 @@ def tensor_alg(prods, graph):
     for symb in symbols:
         matrix_graph[symb] = scipy.sparse.csr_matrix((data[symb], (rows[symb], cols[symb])), shape=(n, n), dtype=bool)
 
+    symbols_ = matrix_automata.keys() & matrix_graph.keys()
     change = True
     k = m * n
     while change:
         change = False
         matrix_prod = scipy.sparse.csr_matrix((k, k), dtype=bool)
-        for symb in matrix_automata.keys() & matrix_graph.keys():
+        for symb in symbols_:
             matrix_prod += scipy.sparse.kron(matrix_automata[symb], matrix_graph[symb])
-        transitive = matrix_prod
-        mul = matrix_prod
-        for _ in range(k - 1):
-            mul *= matrix_prod
-            transitive += mul
-        for i in range(k):
-            for j in range(k):
-                if transitive[i, j]:
-                    s = i // n
-                    f = j // n
-                    if s in start_set and f in final_set:
-                        x = i % n
-                        y = j % n
-                        if start_set[s] == final_set[f] and start_set[s] != "":
-                            if matrix_graph[start_set[s]][x, y] == False:
-                                change = True
-                                matrix_graph[start_set[s]][x, y] = True
+        pow = k - 1
+        while pow:
+            pow //= 2
+            matrix_prod += matrix_prod * matrix_prod
+        r_nnz, c_nnz = matrix_prod.nonzero()
+        for i, j in zip(r_nnz, c_nnz):
+            if matrix_prod[i, j]:
+                s = i // n
+                f = j // n
+                if start_set[s] != "" and final_set[f] != "":
+                    x = i % n
+                    y = j % n
+                    if start_set[s] == final_set[f]:
+                        if matrix_graph[start_set[s]][x, y] == False:
+                            change = True
+                            matrix_graph[start_set[s]][x, y] = True
 
     return matrix_automata, matrix_graph, m, n
 
 
 def solve_matrix_alg(filename_grammar, filename_graph, filename_res):
-    prods = parse_grammar(filename_grammar)
-    res = matrix_alg(to_weak_CNF(prods), parse_graph(filename_graph))
-    print_grammar(to_weak_CNF(prods), filename_res)
+    prods = to_weak_CNF(parse_grammar(filename_grammar))
+    res = matrix_alg(prods, parse_graph(filename_graph))
+    print_grammar(prods, filename_res)
     print_res("S", res, filename_res)
 
 
