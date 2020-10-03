@@ -101,7 +101,7 @@ select count from [graph1.txt] where (2) - (a | b)* -> (_) using hellings
 ```
 ######adding a graph expression means that the paths between the required pairs of vertices must also satisfy the condition of being in the language specified by this expression
 ```
-select count from intersec ([graph1.txt], compl (graph2.txt)) graph3.txt where (_) - S -> (3)
+select count from intersec ([graph1.txt], compl ([graph2.txt])) [graph3.txt] where (_) - S -> (3)
 ```
 #### script
 ```
