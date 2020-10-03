@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 from collections import defaultdict
-from queue import Queue
 from chomsky import is_term
 from chomsky import parse_grammar
 from chomsky import eps
+from chomsky import to_weak_CNF
 
 
 def parse_word(filename):
@@ -74,26 +74,26 @@ def Hellings(prods, graph):
         for x in dict[eps]:
             res.append((x, i, i))
 
-    q = Queue()
+    q = []
     for element in res:
-        q.put(element)
+        q.append(element)
 
     filtered_prods = [prod for prod in prods if len(prod[1]) == 2 and \
                       (not is_term(prod[1][0])) and (not is_term(prod[1][1]))]
 
-    while not q.empty():
-        nonterm, u, v = q.get()
+    while q:
+        nonterm, u, v = q.pop()
         for nonterm_, u_, v_ in res:
             if v == u_:
                 for prod in filtered_prods:
                     if (prod[1][0] == nonterm) and (prod[1][1] == nonterm_) and ((prod[0], u, v_) not in res):
-                        q.put((prod[0], u, v_))
+                        q.append((prod[0], u, v_))
                         res.append((prod[0], u, v_))
         for nonterm_, u_, v_ in res:
             if v_ == u:
                 for prod in filtered_prods:
                     if (prod[1][0] == nonterm_) and (prod[1][1] == nonterm) and ((prod[0], u_, v) not in res):
-                        q.put((prod[0], u_, v))
+                        q.append((prod[0], u_, v))
                         res.append((prod[0], u_, v))
 
     return res
@@ -107,6 +107,6 @@ def solve_CYK(filename_grammar, filename_word):
 
 
 def solve_Hellings(filename_grammar, filename_graph, filename_res):
-    res = Hellings(parse_grammar(filename_grammar), parse_graph(filename_graph))
+    res = Hellings(to_weak_CNF(parse_grammar(filename_grammar)), parse_graph(filename_graph))
     print_res("S", res, filename_res)
 
